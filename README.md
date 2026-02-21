@@ -64,3 +64,4 @@ Se utiliza **embedding** en lugar de referencias porque:
 | `deletedAt` | Date \| null | Baja lógica |
 
 ---
+
