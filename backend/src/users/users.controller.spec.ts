@@ -9,6 +9,8 @@ describe('UsersController', () => {
     create: jest.fn(),
     findAll: jest.fn(),
     findOne: jest.fn(),
+    update: jest.fn(),
+    remove: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -51,6 +53,7 @@ describe('UsersController', () => {
       id: 'abc123',
       email: 'ana@mail.com',
       role: 'USER',
+      createdAt: new Date(),
       profile: {
         firstName: 'Ana',
         lastName: 'Perez',
@@ -71,7 +74,7 @@ describe('UsersController', () => {
     );
   });
 
-  it('findAll should default to page=1 and limit=10 when no query params', async () => {
+  it('findAll should default to page=1, limit=10, order=desc when no params', async () => {
     usersServiceMock.findAll.mockResolvedValueOnce({
       page: 1,
       limit: 10,
@@ -79,13 +82,13 @@ describe('UsersController', () => {
       items: [],
     });
 
-    const res = await controller.findAll(undefined, undefined);
+    const res = await controller.findAll(undefined, undefined, undefined, undefined, undefined);
 
-    expect(usersServiceMock.findAll).toHaveBeenCalledWith(1, 10);
+    expect(usersServiceMock.findAll).toHaveBeenCalledWith(1, 10, undefined, undefined, 'desc');
     expect(res).toEqual({ page: 1, limit: 10, total: 0, items: [] });
   });
 
-  it('findAll should parse page and limit and call service.findAll', async () => {
+  it('findAll should parse page/limit and forward search', async () => {
     usersServiceMock.findAll.mockResolvedValueOnce({
       page: 2,
       limit: 5,
@@ -93,9 +96,31 @@ describe('UsersController', () => {
       items: [],
     });
 
-    const res = await controller.findAll('2', '5');
+    const res = await controller.findAll('2', '5', 'ana', undefined, undefined);
 
-    expect(usersServiceMock.findAll).toHaveBeenCalledWith(2, 5);
+    expect(usersServiceMock.findAll).toHaveBeenCalledWith(2, 5, 'ana', undefined, 'desc');
     expect(res).toEqual({ page: 2, limit: 5, total: 12, items: [] });
+  });
+
+  it('findAll should forward sort and order', async () => {
+    usersServiceMock.findAll.mockResolvedValueOnce({
+      page: 1,
+      limit: 10,
+      total: 0,
+      items: [],
+    });
+
+    await controller.findAll('1', '10', 'ana', 'email', 'asc');
+
+    expect(usersServiceMock.findAll).toHaveBeenCalledWith(1, 10, 'ana', 'email', 'asc');
+  });
+
+  it('remove should call service.remove and return void', async () => {
+    usersServiceMock.remove.mockResolvedValueOnce(undefined);
+
+    const res = await controller.remove('abc123');
+
+    expect(usersServiceMock.remove).toHaveBeenCalledWith('abc123');
+    expect(res).toBeUndefined();
   });
 });

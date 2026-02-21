@@ -13,10 +13,8 @@ import { User } from './schemas/user.schema';
 describe('UsersService', () => {
   let service: UsersService;
 
-  const findOneExec = jest.fn();
   const findOneLean = jest.fn();
 
-  const findExec = jest.fn();
   const findSort = jest.fn();
   const findSkip = jest.fn();
   const findLimit = jest.fn();
@@ -31,7 +29,6 @@ describe('UsersService', () => {
 
   beforeEach(async () => {
     jest.clearAllMocks();
-
     (bcrypt.hash as jest.Mock).mockReset();
 
     userModel.findOne.mockReturnValue({ lean: findOneLean });
@@ -79,7 +76,6 @@ describe('UsersService', () => {
         deletedAt: null,
       }),
     );
-
     expect(res).toEqual({ id: 'abc123' });
   });
 
@@ -102,6 +98,7 @@ describe('UsersService', () => {
       email: 'ana@mail.com',
       role: 'USER',
       passwordHash: 'SECRET',
+      createdAt: new Date('2026-02-01T00:00:00.000Z'),
       profile: {
         firstName: 'Ana',
         lastName: 'Perez',
@@ -122,6 +119,7 @@ describe('UsersService', () => {
       id: 'abc123',
       email: 'ana@mail.com',
       role: 'USER',
+      createdAt: expect.any(Date),
       profile: {
         firstName: 'Ana',
         lastName: 'Perez',
@@ -135,13 +133,10 @@ describe('UsersService', () => {
 
   it('findOne should throw NotFoundException when user does not exist', async () => {
     findOneLean.mockResolvedValueOnce(null);
-
-    await expect(service.findOne('nope')).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
+    await expect(service.findOne('nope')).rejects.toBeInstanceOf(NotFoundException);
   });
 
-  it('findAll should default page/limit and return paginated result', async () => {
+  it('findAll should default page/limit, no search, default sort createdAt desc', async () => {
     findLean.mockResolvedValueOnce([
       {
         _id: { toString: () => 'u1' },
@@ -155,7 +150,7 @@ describe('UsersService', () => {
     const res = await service.findAll(undefined as any, undefined as any);
 
     expect(userModel.find).toHaveBeenCalledWith({ deletedAt: null });
-    expect(findSort).toHaveBeenCalledWith({ createdAt: -1, _id: -1 });
+    expect(findSort).toHaveBeenCalledWith({ createdAt: -1 });
     expect(findSkip).toHaveBeenCalledWith(0);
     expect(findLimit).toHaveBeenCalledWith(10);
     expect(userModel.countDocuments).toHaveBeenCalledWith({ deletedAt: null });
@@ -175,7 +170,29 @@ describe('UsersService', () => {
     });
   });
 
-  it('findAll should apply page/limit and cap limit to 100', async () => {
+  it('findAll should apply search filter with $or regex', async () => {
+    userModel.countDocuments.mockResolvedValueOnce(0);
+
+    await service.findAll(1, 10, 'ana');
+
+    expect(userModel.find).toHaveBeenCalledWith({
+      deletedAt: null,
+      $or: [
+        { 'profile.firstName': { $regex: 'ana', $options: 'i' } },
+        { 'profile.lastName': { $regex: 'ana', $options: 'i' } },
+      ],
+    });
+  });
+
+  it('findAll should apply sort/email asc when provided', async () => {
+    userModel.countDocuments.mockResolvedValueOnce(0);
+
+    await service.findAll(1, 10, undefined, 'email', 'asc');
+
+    expect(findSort).toHaveBeenCalledWith({ email: 1 });
+  });
+
+  it('findAll should cap limit to 100', async () => {
     userModel.countDocuments.mockResolvedValueOnce(0);
 
     await service.findAll(3, 500);
