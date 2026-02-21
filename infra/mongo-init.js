@@ -7,6 +7,8 @@ const usersValidator = {
     required: ["email", "passwordHash", "profile", "createdAt"],
     additionalProperties: false,
     properties: {
+      _id: { bsonType: "objectId" },
+        __v: { bsonType: "int" },
       email: {
         bsonType: "string",
         description: "Email obligatorio y único",
