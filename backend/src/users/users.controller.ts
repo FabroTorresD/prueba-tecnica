@@ -9,22 +9,29 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiConflictResponse,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiNoContentResponse,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiQuery,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { Roles } from 'src/auth/decorators/roles.decorators';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 
 class CreateUserResponseDto {
   id: string;
@@ -64,8 +71,13 @@ class UsersListResponseDto {
   items: UserListItemResponseDto[];
 }
 
-@ApiTags('users')
+@ApiTags('Users')
+@ApiBearerAuth('access-token')
+@ApiUnauthorizedResponse({ description: 'Missing/invalid/expired token' })
+@ApiForbiddenResponse({ description: 'Requires ADMIN role' })
 @Controller('users')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('ADMIN')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
