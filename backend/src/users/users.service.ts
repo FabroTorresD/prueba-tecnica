@@ -20,7 +20,7 @@ function isDuplicateKey(err: any) {
 export class UsersService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
-  ) {}
+  ) { }
 
   async create(dto: CreateUserDto) {
     const passwordHash = await bcrypt.hash(dto.password, 10);
@@ -74,65 +74,77 @@ export class UsersService {
   }
 
   async findAll(
-  page = 1,
-  limit = 10,
-  search?: string,
-  sort?: string,
-  order: 'asc' | 'desc' = 'desc',
-) {
-  const safePage = Number.isFinite(page) ? Math.max(1, Math.trunc(page)) : 1;
-  const safeLimit = Number.isFinite(limit)
-    ? Math.min(100, Math.max(1, Math.trunc(limit)))
-    : 10;
+    page = 1,
+    limit = 10,
+    search?: string,
+    sort?: string,
+    order: 'asc' | 'desc' = 'desc',
+  ) {
+    const safePage = Number.isFinite(page) ? Math.max(1, Math.trunc(page)) : 1;
+    const safeLimit = Number.isFinite(limit)
+      ? Math.min(100, Math.max(1, Math.trunc(limit)))
+      : 10;
 
-  const filter: any = { deletedAt: null };
+    const filter: any = { deletedAt: null };
 
-  if (search) {
-    filter.$or = [
-      { 'profile.firstName': { $regex: search, $options: 'i' } },
-      { 'profile.lastName': { $regex: search, $options: 'i' } },
+    if (search) {
+      filter.$or = [
+        { 'profile.firstName': { $regex: search, $options: 'i' } },
+        { 'profile.lastName': { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    const allowedSortFields = [
+      'email',
+      'role',
+      'createdAt',
+      'profile.firstName',
+      'profile.lastName',
     ];
+
+    const sortField = allowedSortFields.includes(sort ?? '')
+      ? sort
+      : 'createdAt';
+
+    const sortOrder = order === 'asc' ? 1 : -1;
+
+    const [items, total] = await Promise.all([
+      this.userModel
+        .find(filter)
+        .sort({ [sortField!]: sortOrder })
+        .skip((safePage - 1) * safeLimit)
+        .limit(safeLimit)
+        .lean(),
+      this.userModel.countDocuments(filter),
+    ]);
+
+    return {
+      page: safePage,
+      limit: safeLimit,
+      total,
+      items: items.map((u: any) => ({
+        id: u._id.toString(),
+        email: u.email,
+        role: u.role,
+        profile: {
+          firstName: u.profile?.firstName ?? null,
+          lastName: u.profile?.lastName ?? null,
+        },
+      })),
+    };
   }
 
-  const allowedSortFields = [
-    'email',
-    'role',
-    'createdAt',
-    'profile.firstName',
-    'profile.lastName',
-  ];
+  async findByEmail(email: string) {
+    const normalized = email.toLowerCase().trim();
 
-  const sortField = allowedSortFields.includes(sort ?? '')
-    ? sort
-    : 'createdAt';
+    const user = await this.userModel
+      .findOne({ email: normalized, deletedAt: null })
+      .lean();
 
-  const sortOrder = order === 'asc' ? 1 : -1;
+    if (!user) return null;
 
-  const [items, total] = await Promise.all([
-    this.userModel
-      .find(filter)
-      .sort({ [sortField!]: sortOrder })
-      .skip((safePage - 1) * safeLimit)
-      .limit(safeLimit)
-      .lean(),
-    this.userModel.countDocuments(filter),
-  ]);
-
-  return {
-    page: safePage,
-    limit: safeLimit,
-    total,
-    items: items.map((u: any) => ({
-      id: u._id.toString(),
-      email: u.email,
-      role: u.role,
-      profile: {
-        firstName: u.profile?.firstName ?? null,
-        lastName: u.profile?.lastName ?? null,
-      },
-    })),
-  };
-}
+    return user;
+  }
 
   async update(id: string, dto: UpdateUserDto) {
     const set: any = {};

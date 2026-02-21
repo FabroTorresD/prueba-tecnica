@@ -4,11 +4,11 @@ const db = db.getSiblingDB(dbName);
 const usersValidator = {
   $jsonSchema: {
     bsonType: "object",
-    required: ["email", "passwordHash", "profile", "createdAt"],
+    required: ["email", "passwordHash", "profile"],
     additionalProperties: false,
     properties: {
       _id: { bsonType: "objectId" },
-        __v: { bsonType: "int" },
+      __v: { bsonType: "int" },
       email: {
         bsonType: "string",
         description: "Email obligatorio y único",
@@ -26,8 +26,8 @@ const usersValidator = {
         properties: {
           firstName: { bsonType: "string", minLength: 1 },
           lastName: { bsonType: "string", minLength: 1 },
-          birthDate: { bsonType: "date" },
-          phone: { bsonType: "string" },
+          birthDate: { bsonType: ["date", "null"] },
+          phone: { bsonType: ["string", "null"] },
         },
       },
       role: {
