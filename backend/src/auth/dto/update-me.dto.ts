@@ -1,7 +1,6 @@
 import { Type } from 'class-transformer';
 import {
   IsEmail,
-  IsEnum,
   IsOptional,
   IsString,
   MinLength,
@@ -10,7 +9,7 @@ import {
 } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
-class UpdateProfileDto {
+class UpdateMeProfileDto {
   @ApiPropertyOptional({ example: 'Juan' })
   @IsOptional()
   @IsString()
@@ -34,20 +33,15 @@ class UpdateProfileDto {
   phone?: string | null;
 }
 
-export class UpdateUserDto {
+export class UpdateMeDto {
   @ApiPropertyOptional({ example: 'nuevo@email.com' })
   @IsOptional()
   @IsEmail()
   email?: string;
 
-  @ApiPropertyOptional({ enum: ['USER', 'ADMIN'], example: 'ADMIN' })
-  @IsOptional()
-  @IsEnum(['USER', 'ADMIN'])
-  role?: 'USER' | 'ADMIN';
-
-  @ApiPropertyOptional({ type: UpdateProfileDto })
+  @ApiPropertyOptional({ type: UpdateMeProfileDto })
   @IsOptional()
   @ValidateNested()
-  @Type(() => UpdateProfileDto)
-  profile?: UpdateProfileDto;
+  @Type(() => UpdateMeProfileDto)
+  profile?: UpdateMeProfileDto;
 }

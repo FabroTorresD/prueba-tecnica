@@ -29,6 +29,7 @@ import { MeResponseDto } from './dto/me-response.dto';
 
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { UpdateUserDto } from '../users/dto/update-user.dto';
+import { UpdateMeDto } from './dto/update-me.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -72,7 +73,7 @@ export class AuthController {
   @ApiOkResponse({ type: MeResponseDto })
   @ApiUnauthorizedResponse({ description: 'Missing/invalid token' })
   @ApiBadRequestResponse({ description: 'Validation error' })
-  async updateMe(@Req() req: any, @Body() dto: UpdateUserDto): Promise<MeResponseDto> {
+  async updateMe(@Req() req: any, @Body() dto: UpdateMeDto): Promise<MeResponseDto> {
     return this.authService.updateMe(req.user.sub, dto);
   }
 
