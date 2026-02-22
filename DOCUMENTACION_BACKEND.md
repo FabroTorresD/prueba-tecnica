@@ -80,11 +80,18 @@ Authorization: Bearer <token>
 
 Al iniciar el backend se crea automáticamente un usuario con rol `ADMIN`.
 
+### 🔑 Credenciales por defecto:
+
+- **Email:** `admin@admin.com`
+- **Password:** `admin`
+
 Este usuario:
 
 - Puede acceder a todos los endpoints
 - Puede gestionar usuarios
 - Permite probar el sistema sin configuración manual adicional
+
+> ⚠️ Nota: Estas credenciales son únicamente para entorno de prueba/desarrollo.
 
 ---
 
@@ -199,3 +206,4 @@ El sistema responde correctamente según el escenario:
 - Implementación de soft delete.
 - Protección de endpoints mediante guards.
 - Arquitectura preparada para escalar a más roles o permisos en el futuro.
+- Se incluye un administrador inicial para facilitar las pruebas del sistema.
