@@ -72,6 +72,16 @@ docker compose down -v
 
 ---
 
+# 🔄 CI / Tests Automáticos
+
+Se configuró un workflow de **GitHub Actions** para ejecutar automáticamente los tests (`npm test`).
+
+- En la rama `dev`: los tests se ejecutan en cada push y Pull Request.
+- En la rama `main`: los tests se ejecutan automáticamente al hacer merge.
+
+Esto asegura que ambas ramas mantengan un estado estable y validado.
+
+
 # 🔑 Usuario Administrador Inicial
 
 Al iniciar el backend se crea automáticamente un usuario con rol `ADMIN`.
