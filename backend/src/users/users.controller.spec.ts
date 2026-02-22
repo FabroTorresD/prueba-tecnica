@@ -82,9 +82,21 @@ describe('UsersController', () => {
       items: [],
     });
 
-    const res = await controller.findAll(undefined, undefined, undefined, undefined, undefined);
+    const res = await controller.findAll(
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    );
 
-    expect(usersServiceMock.findAll).toHaveBeenCalledWith(1, 10, undefined, undefined, 'desc');
+    expect(usersServiceMock.findAll).toHaveBeenCalledWith(
+      1,
+      10,
+      undefined,
+      undefined,
+      'desc',
+    );
     expect(res).toEqual({ page: 1, limit: 10, total: 0, items: [] });
   });
 
@@ -98,7 +110,13 @@ describe('UsersController', () => {
 
     const res = await controller.findAll('2', '5', 'ana', undefined, undefined);
 
-    expect(usersServiceMock.findAll).toHaveBeenCalledWith(2, 5, 'ana', undefined, 'desc');
+    expect(usersServiceMock.findAll).toHaveBeenCalledWith(
+      2,
+      5,
+      'ana',
+      undefined,
+      'desc',
+    );
     expect(res).toEqual({ page: 2, limit: 5, total: 12, items: [] });
   });
 
@@ -112,7 +130,45 @@ describe('UsersController', () => {
 
     await controller.findAll('1', '10', 'ana', 'email', 'asc');
 
-    expect(usersServiceMock.findAll).toHaveBeenCalledWith(1, 10, 'ana', 'email', 'asc');
+    expect(usersServiceMock.findAll).toHaveBeenCalledWith(
+      1,
+      10,
+      'ana',
+      'email',
+      'asc',
+    );
+  });
+
+  it('update should call service.update with id and dto and return updated user', async () => {
+    usersServiceMock.update.mockResolvedValueOnce({
+      id: 'abc123',
+      email: 'new@mail.com',
+      role: 'ADMIN',
+      createdAt: new Date(),
+      profile: {
+        firstName: 'Ana',
+        lastName: 'Perez',
+        birthDate: null,
+        phone: '3510000000',
+      },
+    });
+
+    const dto: any = {
+      email: 'new@mail.com',
+      role: 'ADMIN',
+      profile: { phone: '3510000000' },
+    };
+
+    const res = await controller.update('abc123', dto);
+
+    expect(usersServiceMock.update).toHaveBeenCalledWith('abc123', dto);
+    expect(res).toEqual(
+      expect.objectContaining({
+        id: 'abc123',
+        email: 'new@mail.com',
+        role: 'ADMIN',
+      }),
+    );
   });
 
   it('remove should call service.remove and return void', async () => {
