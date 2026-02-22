@@ -11,6 +11,7 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { UpdateUserDto } from '../users/dto/update-user.dto';
 import { UsersService } from '../users/users.service';
+import { UpdateMeDto } from './dto/update-me.dto';
 
 @Injectable()
 export class AuthService {
@@ -80,8 +81,8 @@ export class AuthService {
   }
 }
 
-  async updateMe(userId: string, dto: UpdateUserDto) {
-    const safeDto: UpdateUserDto = {
+  async updateMe(userId: string, dto: UpdateMeDto) {
+    const safeDto: UpdateMeDto = {
       email: dto.email,
       profile: dto.profile,
     };
