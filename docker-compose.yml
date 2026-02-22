@@ -2,6 +2,7 @@ services:
   mongo:
     image: mongo:7
     container_name: mongo_prueba
+    restart: always
     ports:
       - "27017:27017"
     environment:
@@ -33,12 +34,14 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: prueba_backend
+    restart: always
     ports:
       - "3000:3000"
     environment:
       PORT: 3000
       MONGO_URI: mongodb://root:root@mongo:27017/prueba_tecnica?authSource=admin
       JWT_SECRET: change_me_for_interview
+      JWT_EXPIRES_IN: 1h
     depends_on:
       - mongo
 
